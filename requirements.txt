@@ -1,0 +1,4 @@
+mirascope[openai]
+mcp
+python-dotenv
+aiohttp
