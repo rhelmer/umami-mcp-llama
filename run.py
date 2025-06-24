@@ -520,11 +520,11 @@ def parse_arguments():
 
     parser.add_argument(
         "--mcp-server-dir",
-        default="/Users/rhelmer/src/jakeyShakey_umami_mcp_server/",
+        default="/Users/example/src/jakeyShakey_umami_mcp_server/",
         help="Path to MCP server directory",
     )
     parser.add_argument(
-        "--website", default="stellarwhiskers.com", help="Website domain to analyze"
+        "--website", default="example.com", help="Website domain to analyze"
     )
     parser.add_argument(
         "--start-date", default="2025-06-01", help="Start date (YYYY-MM-DD)"
