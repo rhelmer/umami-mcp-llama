@@ -52,17 +52,6 @@ This project combines several powerful tools to create automated analytics repor
    UMAMI_USERNAME=username
    UMAMI_PASSWORD=password
    UMAMI_TEAM_ID=your-team-id
-   
-   # LLM Backend Configuration
-   BACKEND=ollama  # or 'cloudflare'
-   
-   # Ollama Configuration (if using Ollama)
-   OLLAMA_HOST=http://localhost:11434
-   OLLAMA_MODEL=llama3.2
-   
-   # Cloudflare Configuration (if using Cloudflare Workers)
-   CLOUDFLARE_API_TOKEN=your-cf-token
-   CLOUDFLARE_ACCOUNT_ID=your-account-id
    ```
 
 ## Configuration
