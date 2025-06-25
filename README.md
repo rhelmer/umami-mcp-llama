@@ -57,7 +57,7 @@ This project combines several powerful tools to create automated analytics repor
    
    # Ollama Configuration (if using Ollama)
    OLLAMA_HOST=http://localhost:11434
-   OLLAMA_MODEL=llama3.1
+   OLLAMA_MODEL=llama3.2
    
    # Cloudflare Configuration (if using Cloudflare Workers)
    CLOUDFLARE_API_TOKEN=your-cf-token
@@ -87,7 +87,7 @@ This project combines several powerful tools to create automated analytics repor
 curl -fsSL https://ollama.ai/install.sh | sh
 
 # Pull Llama model
-ollama pull llama3.1
+ollama pull llama3.2
 
 # Start Ollama service
 ollama serve
