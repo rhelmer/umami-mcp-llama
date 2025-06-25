@@ -316,7 +316,6 @@ ANALYSIS TARGET:
 - Timezone: {real_data.get('timezone', 'Unknown')}
 
 Create a comprehensive dashboard analysis using ONLY the real data provided."""
-        print("debug prompt:", prompt)
         return prompt
 
     async def create_chat_prompt(self, user_question: str) -> str:
