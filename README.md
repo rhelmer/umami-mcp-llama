@@ -86,7 +86,7 @@ ollama pull llama3.2
 Start an interactive session to explore your analytics data:
 
 ```bash
-uv run --with-requirements requirements.txt run.py --chat
+uv run --with-requirements requirements.txt run.py --start-date 2024-01-01 --end-date 2024-01-31 --website example.com --mcp-server-dir ~/src/umami_mcp_server --chat
 ```
 
 Example interactions:
@@ -100,14 +100,8 @@ Example interactions:
 Generate specific reports directly:
 
 ```bash
-# Weekly summary
-uv run --with-requirements requirements.txt run.py --report weekly
-
-# Monthly comprehensive report
-uv run --with-requirements requirements.txt run.py --report monthly
-
 # Custom date range
-uv run --with-requirements requirements.txt run.py --report custom --start-date 2024-01-01 --end-date 2024-01-31
+uv run --with-requirements requirements.txt run.py --start-date 2024-01-01 --end-date 2024-01-31 --website example.com --mcp-server-dir ~/src/umami_mcp_server
 ```
 
 ### Automated Scheduling
@@ -116,7 +110,8 @@ Set up automated report generation using cron:
 
 ```bash
 # Add to crontab for weekly reports every Monday at 9 AM
-0 9 * * 1 cd /path/to/project && uv run --with-requirements requirements.txt run.py --report weekly --output /path/to/reports/
+0 9 * * 1 cd /path/to/project && uv run --with-requirements requirements.txt run.py --start-date 2024-01-01 --end-date 2024-01-31 --website example.com --mcp-server-dir ~/src/umami_mcp_server
+
 ```
 
 ## Report Types
@@ -143,12 +138,6 @@ curl -u user:pass https://your-umami-instance.com/api/websites
 # Verify Ollama is running
 ollama list
 ollama ps
-```
-
-**MCP Server Issues**
-```bash
-# Check MCP server logs
-uv run --with-requirements requirements.txt run.py
 ```
 
 ## Development
