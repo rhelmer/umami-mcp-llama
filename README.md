@@ -172,6 +172,6 @@ For issues and questions:
 ## Acknowledgments
 
 - [Umami](https://umami.is/) for the analytics platform
-- [MCP Mirror](https://github.com/MCP-Mirror) for the Umami MCP server
+- [Umami MCP Server](https://github.com/MCP-Mirror/jakeyShakey_umami_mcp_server) for the Umami MCP server
 - [Ollama](https://ollama.ai/) for local LLM inference
 - [Cloudflare](https://workers.cloudflare.com/) for cloud AI services
