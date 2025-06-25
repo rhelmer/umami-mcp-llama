@@ -2,6 +2,8 @@
 
 An automated analytics reporting tool that leverages MiraScope with Ollama or Cloudflare Workers to generate intelligent reports from Umami analytics data using the Model Control Protocol (MCP).
 
+Blog post: https://www.rhelmer.org/blog/ai-powered-analytics-reports-using-mcp/
+
 ## Overview
 
 This project combines several powerful tools to create automated analytics reports:
