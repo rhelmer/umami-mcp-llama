@@ -61,13 +61,16 @@ This project combines several powerful tools to create automated analytics repor
 #### Option 1: Ollama (Local)
 ```bash
 # Install Ollama
+## Linux
 curl -fsSL https://ollama.ai/install.sh | sh
-
-# Pull Llama model
-ollama pull llama3.2
+## macOS
+brew install ollama
 
 # Start Ollama service
 ollama serve
+
+# Pull Llama model
+ollama pull llama3.2
 ```
 
 #### Option 2: Cloudflare Workers
