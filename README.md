@@ -49,8 +49,9 @@ This project combines several powerful tools to create automated analytics repor
    ```env
    # Umami Configuration
    UMAMI_API_URL=https://your-umami-instance.com/api
-   UMAMI_API_TOKEN=your-api-token
-   UMAMI_WEBSITE_ID=your-website-id
+   UMAMI_USERNAME=username
+   UMAMI_PASSWORD=password
+   UMAMI_TEAM_ID=your-team-id
    
    # LLM Backend Configuration
    BACKEND=ollama  # or 'cloudflare'
@@ -155,7 +156,7 @@ Set up automated report generation using cron:
 **Connection Errors**
 ```bash
 # Check Umami API connectivity
-curl -H "Authorization: Bearer YOUR_TOKEN" https://your-umami-instance.com/api/websites
+curl -u user:pass https://your-umami-instance.com/api/websites
 ```
 
 **Ollama Issues**
@@ -168,14 +169,7 @@ ollama ps
 **MCP Server Issues**
 ```bash
 # Check MCP server logs
-uv run --with-requirements requirements.txt run.py --debug
-```
-
-### Debug Mode
-
-Run with debug logging for troubleshooting:
-```bash
-uv run --with-requirements requirements.txt run.py --chat --debug
+uv run --with-requirements requirements.txt run.py
 ```
 
 ## Development
