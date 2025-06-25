@@ -67,19 +67,6 @@ This project combines several powerful tools to create automated analytics repor
 
 ## Configuration
 
-### Umami Setup
-
-1. **Generate API Token**
-   - Log into your Umami dashboard
-   - Go to Settings → API
-   - Create a new API token
-   - Copy the token to your `.env` file
-
-2. **Get Website ID**
-   - In Umami dashboard, go to your website
-   - Copy the website ID from the URL or settings
-   - Add to your `.env` file
-
 ### Backend Setup
 
 #### Option 1: Ollama (Local)
