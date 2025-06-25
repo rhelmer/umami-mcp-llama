@@ -204,20 +204,14 @@ uv run --with-requirements requirements.txt run.py --chat --debug
 
 - `miracope`: MCP client framework
 - `umami-mcp-server`: Umami analytics MCP integration
-- `ollama-python`: Ollama client (if using Ollama backend)
-- `requests`: HTTP client for API calls
 - `python-dotenv`: Environment variable management
-
-## License
-
-[Specify your license]
 
 ## Support
 
 For issues and questions:
 - Create an issue in this repository
 - Check the [Umami MCP Server documentation](https://github.com/MCP-Mirror/jakeyShakey_umami_mcp_server)
-- Review MiraScope documentation
+- Review [MiraScope documentation](https://mirascope.com/docs/mirascope)
 
 ## Acknowledgments
 
