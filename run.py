@@ -9,6 +9,9 @@ from mcp.client.stdio import stdio_client, StdioServerParameters
 from mcp.client.session import ClientSession
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional, Tuple
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Suppress specific warnings
 warnings.filterwarnings(
