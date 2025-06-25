@@ -177,13 +177,7 @@ uv run --with-requirements requirements.txt run.py
 ### Project Structure
 ```
 ├── run.py              # Main application entry point
-├── requirements.txt    # Python dependencies
-├── config/            # Configuration files
-├── src/               # Source code
-│   ├── mcp_client.py  # MiraScope MCP client
-│   ├── llm_backend.py # LLM backend abstraction
-│   └── report_gen.py  # Report generation logic
-└── templates/         # Report templates
+└── requirements.txt    # Python dependencies
 ```
 
 ### Contributing
