@@ -115,20 +115,19 @@ class AnalyticsDashboard:
         """Call Gemini via CLI"""
         try:
             # The gemini-cli will use authenticated user credentials if available
+            # The prompt is passed via stdin
             proc = await asyncio.create_subprocess_exec(
                 "npx",
-                "https://github.com/google-gemini/gemini-cli",
+                "@google/gemini-cli",
                 "generate",
                 "--model",
                 "gemini-1.5-flash",
-                "--prompt",
-                prompt,
                 stdin=asyncio.subprocess.PIPE,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
             )
 
-            stdout, stderr = await proc.communicate()
+            stdout, stderr = await proc.communicate(input=prompt.encode())
 
             if proc.returncode != 0:
                 raise RuntimeError(f"Gemini-CLI error: {stderr.decode()}")
@@ -136,7 +135,7 @@ class AnalyticsDashboard:
             return stdout.decode().strip()
         except FileNotFoundError:
             raise RuntimeError(
-                "Gemini-CLI (npx https://github.com/google-gemini/gemini-cli) is not installed or not in PATH"
+                "Gemini-CLI (npx @google/gemini-cli) is not installed or not in PATH"
             )
 
     async def call_gemini_api(self, prompt: str) -> str:
