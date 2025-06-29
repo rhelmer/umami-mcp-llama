@@ -14,15 +14,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Suppress specific warnings
-warnings.filterwarnings(
-    "ignore", category=UserWarning, module="multiprocessing.resource_tracker"
-)
 os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
 
 
 class AnalyticsDashboard:
-    def __init__(self, mcp_server_dir: str):
+    def __init__(self, mcp_server_dir: str, ai_provider: str = "cloudflare"):
         self.mcp_server_dir = mcp_server_dir
+        self.ai_provider = ai_provider.lower()
         self.setup_mcp_server()
         self.setup_ai_clients()
         self.session_data = {}  # Store data for chat mode
@@ -30,13 +28,14 @@ class AnalyticsDashboard:
     def setup_mcp_server(self):
         """Setup MCP server parameters"""
         keys = [
-            "TOKENIZERS_PARALLELISM",
             "UMAMI_API_URL",
             "UMAMI_USERNAME",
             "UMAMI_PASSWORD",
             "UMAMI_TEAM_ID",
         ]
         env_vars = {k: os.environ[k] for k in keys if k in os.environ}
+        env_vars["TOKENIZERS_PARALLELISM"] = "false"
+        env_vars["PYTHONWARNINGS"] = "ignore:resource_tracker:UserWarning"
 
         self.server_params = StdioServerParameters(
             command="uv",
@@ -53,6 +52,7 @@ class AnalyticsDashboard:
         """Setup AI client configurations"""
         self.CLOUDFLARE_ACCOUNT_ID = os.environ.get("CLOUDFLARE_ACCOUNT_ID")
         self.CLOUDFLARE_API_TOKEN = os.environ.get("CLOUDFLARE_API_TOKEN")
+        self.GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
     async def call_cloudflare_ai(
         self, prompt: str, model: str = "@cf/meta/llama-3.1-8b-instruct"
@@ -90,8 +90,8 @@ class AnalyticsDashboard:
 
                 return result["result"]["response"].strip()
 
-    async def call_ollama_fallback(self, prompt: str, model: str = "llama3.2") -> str:
-        """Fallback to Ollama if Cloudflare AI fails"""
+    async def call_ollama(self, prompt: str, model: str = "llama3.2") -> str:
+        """Call Ollama locally"""
         try:
             proc = await asyncio.create_subprocess_exec(
                 "ollama",
@@ -111,21 +111,118 @@ class AnalyticsDashboard:
         except FileNotFoundError:
             raise RuntimeError("Ollama is not installed or not in PATH")
 
-    async def call_ai_with_fallback(self, prompt: str) -> Tuple[str, str]:
-        """Try Cloudflare AI first, fallback to Ollama"""
+    async def call_gemini_cli(self, prompt: str) -> str:
+        """Call Gemini via CLI"""
+        if not self.GEMINI_API_KEY:
+            raise ValueError("Missing GEMINI_API_KEY environment variable")
+
         try:
-            response = await self.call_cloudflare_ai(prompt)
-            return response, "cloudflare"
-        except Exception as cf_error:
-            print(f"Cloudflare AI failed: {cf_error}")
-            print("Falling back to Ollama...")
-            try:
-                response = await self.call_ollama_fallback(prompt)
+            # Set the API key in the environment for the subprocess
+            env = os.environ.copy()
+            env["GEMINI_API_KEY"] = self.GEMINI_API_KEY
+
+            proc = await asyncio.create_subprocess_exec(
+                "npx",
+                "@google/generative-ai-cli",
+                "generate",
+                "--model",
+                "gemini-1.5-flash",
+                "--prompt",
+                prompt,
+                stdin=asyncio.subprocess.PIPE,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+                env=env,
+            )
+
+            stdout, stderr = await proc.communicate()
+
+            if proc.returncode != 0:
+                raise RuntimeError(f"Gemini-CLI error: {stderr.decode()}")
+
+            return stdout.decode().strip()
+        except FileNotFoundError:
+            raise RuntimeError(
+                "Gemini-CLI (npx @google/generative-ai-cli) is not installed or not in PATH"
+            )
+
+    async def call_gemini_api(self, prompt: str) -> str:
+        """Call Gemini via REST API as fallback"""
+        if not self.GEMINI_API_KEY:
+            raise ValueError("Missing GEMINI_API_KEY environment variable")
+
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={self.GEMINI_API_KEY}"
+
+        headers = {
+            "Content-Type": "application/json",
+        }
+
+        payload = {
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {
+                "temperature": 0.1,
+                "maxOutputTokens": 2048,
+            },
+        }
+
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, headers=headers, json=payload) as response:
+                if response.status != 200:
+                    error_text = await response.text()
+                    raise RuntimeError(
+                        f"Gemini API error ({response.status}): {error_text}"
+                    )
+
+                result = await response.json()
+
+                if "candidates" not in result or not result["candidates"]:
+                    raise RuntimeError(f"No response from Gemini API: {result}")
+
+                content = result["candidates"][0]["content"]["parts"][0]["text"]
+                return content.strip()
+
+    async def call_ai_provider(self, prompt: str) -> Tuple[str, str]:
+        """Call the specified AI provider"""
+        try:
+            if self.ai_provider == "cloudflare":
+                response = await self.call_cloudflare_ai(prompt)
+                return response, "cloudflare"
+            elif self.ai_provider == "ollama":
+                response = await self.call_ollama(prompt)
                 return response, "ollama"
-            except Exception as ollama_error:
-                raise RuntimeError(
-                    f"Both AI services failed. Cloudflare: {cf_error}, Ollama: {ollama_error}"
-                )
+            elif self.ai_provider == "gemini-cli":
+                try:
+                    response = await self.call_gemini_cli(prompt)
+                    return response, "gemini-cli"
+                except Exception as cli_error:
+                    print(f"Gemini CLI failed: {cli_error}")
+                    print("Falling back to Gemini API...")
+                    response = await self.call_gemini_api(prompt)
+                    return response, "gemini-api"
+            else:
+                raise ValueError(f"Unsupported AI provider: {self.ai_provider}")
+
+        except Exception as e:
+            print(f"Primary AI provider ({self.ai_provider}) failed: {e}")
+
+            # Fallback logic
+            if self.ai_provider != "cloudflare":
+                try:
+                    print("Falling back to Cloudflare...")
+                    response = await self.call_cloudflare_ai(prompt)
+                    return response, "cloudflare-fallback"
+                except Exception as cf_error:
+                    print(f"Cloudflare fallback failed: {cf_error}")
+
+            if self.ai_provider != "ollama":
+                try:
+                    print("Falling back to Ollama...")
+                    response = await self.call_ollama(prompt)
+                    return response, "ollama-fallback"
+                except Exception as ollama_error:
+                    print(f"Ollama fallback failed: {ollama_error}")
+
+            raise RuntimeError(f"All AI providers failed. Primary error: {e}")
 
     def get_website_id_from_domain(
         self, websites_data: list, domain: str
@@ -253,6 +350,7 @@ class AnalyticsDashboard:
                         "os",
                         "device",
                         "country",
+                        "event",
                     ]:
                         try:
                             metrics_result = await session.call_tool(
@@ -266,8 +364,8 @@ class AnalyticsDashboard:
                             )
                             real_data[f"metrics_{metric_type}"] = metrics_result.content
                             print(f"Successfully retrieved {metric_type} metrics")
-                            break  # Get at least one metric type
                         except Exception as e:
+                            print(f"Could not retrieve {metric_type} metrics: {e}")
                             continue
                 except Exception as e:
                     print(f"Error getting website metrics: {e}")
@@ -381,23 +479,28 @@ Answer the user's question about the website analytics:"""
 
     async def chat_mode(self):
         """Interactive chat mode for asking questions about the data"""
-        print("\n🤖 Entering chat mode! Ask questions about your analytics data.")
+        print(
+            f"\n🤖 Entering chat mode using {self.ai_provider.upper()}! Ask questions about your analytics data."
+        )
         print("Type 'quit', 'exit', or 'q' to leave chat mode.\n")
 
         while True:
             try:
                 user_input = input("\n📊 Your question: ").strip()
 
-                if user_input.lower() in ["quit", "exit", "q", ""]:
+                if user_input.lower() in ["quit", "exit", "q"]:
                     print("👋 Exiting chat mode. Goodbye!")
                     break
+
+                if not user_input:
+                    continue
 
                 # Create chat prompt with context
                 chat_prompt = await self.create_chat_prompt(user_input)
 
                 # Get AI response
-                print("\n🤔 Thinking...")
-                ai_response, ai_provider = await self.call_ai_with_fallback(chat_prompt)
+                print(f"\n🤔 Thinking with {self.ai_provider}...")
+                ai_response, ai_provider = await self.call_ai_provider(chat_prompt)
 
                 print(f"\n💬 {ai_provider.upper()} Response:")
                 print("-" * 50)
@@ -472,9 +575,11 @@ Answer the user's question about the website analytics:"""
                                 )
 
                                 # Get AI response
-                                print("\n🤖 Generating dashboard with AI...")
-                                ai_response, ai_provider = (
-                                    await self.call_ai_with_fallback(validation_prompt)
+                                print(
+                                    f"\n🤖 Generating dashboard with {self.ai_provider.upper()}..."
+                                )
+                                ai_response, ai_provider = await self.call_ai_provider(
+                                    validation_prompt
                                 )
 
                                 print(
@@ -540,6 +645,12 @@ def parse_arguments():
         action="store_true",
         help="Enable interactive chat mode after generating report",
     )
+    parser.add_argument(
+        "--ai-provider",
+        choices=["cloudflare", "ollama", "gemini-cli"],
+        default="cloudflare",
+        help="AI provider to use (default: cloudflare)",
+    )
 
     return parser.parse_args()
 
@@ -552,11 +663,12 @@ async def main():
     print(f"   Website: {args.website}")
     print(f"   Date Range: {args.start_date} to {args.end_date}")
     print(f"   Timezone: {args.timezone}")
+    print(f"   AI Provider: {args.ai_provider.upper()}")
     print(f"   Chat Mode: {'Enabled' if args.chat else 'Disabled'}")
     print()
 
     # Create dashboard
-    dashboard = AnalyticsDashboard(args.mcp_server_dir)
+    dashboard = AnalyticsDashboard(args.mcp_server_dir, args.ai_provider)
     await dashboard.create_dashboard(
         args.website, args.start_date, args.end_date, args.timezone, args.chat
     )
