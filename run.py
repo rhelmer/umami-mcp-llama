@@ -113,17 +113,11 @@ class AnalyticsDashboard:
 
     async def call_gemini_cli(self, prompt: str) -> str:
         """Call Gemini via CLI"""
-        if not self.GEMINI_API_KEY:
-            raise ValueError("Missing GEMINI_API_KEY environment variable")
-
         try:
-            # Set the API key in the environment for the subprocess
-            env = os.environ.copy()
-            env["GEMINI_API_KEY"] = self.GEMINI_API_KEY
-
+            # The gemini-cli will use authenticated user credentials if available
             proc = await asyncio.create_subprocess_exec(
                 "npx",
-                "@google/generative-ai-cli",
+                "https://github.com/google-gemini/gemini-cli",
                 "generate",
                 "--model",
                 "gemini-1.5-flash",
@@ -132,7 +126,6 @@ class AnalyticsDashboard:
                 stdin=asyncio.subprocess.PIPE,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
-                env=env,
             )
 
             stdout, stderr = await proc.communicate()
@@ -143,7 +136,7 @@ class AnalyticsDashboard:
             return stdout.decode().strip()
         except FileNotFoundError:
             raise RuntimeError(
-                "Gemini-CLI (npx @google/generative-ai-cli) is not installed or not in PATH"
+                "Gemini-CLI (npx https://github.com/google-gemini/gemini-cli) is not installed or not in PATH"
             )
 
     async def call_gemini_api(self, prompt: str) -> str:
@@ -648,7 +641,7 @@ def parse_arguments():
     parser.add_argument(
         "--ai-provider",
         choices=["cloudflare", "ollama", "gemini-cli"],
-        default="cloudflare",
+        default="gemini-cli",
         help="AI provider to use (default: cloudflare)",
     )
 
