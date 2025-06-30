@@ -1,6 +1,6 @@
 # Analytics Report Generator
 
-An automated analytics reporting tool that leverages the MCP Python SDK with Ollama, Cloudflare Workers, or Google Gemini to generate intelligent reports from Umami analytics data using the Model Control Protocol (MCP).
+An automated analytics reporting tool that leverages the MCP Python SDK with Google Gemini, Ollama, or Cloudflare Workers to generate intelligent reports from Umami analytics data using the Model Control Protocol (MCP).
 
 Blog post: https://www.rhelmer.org/blog/ai-powered-analytics-reports-using-mcp/
 
@@ -9,7 +9,7 @@ Blog post: https://www.rhelmer.org/blog/ai-powered-analytics-reports-using-mcp/
 This project combines several powerful tools to create automated analytics reports:
 
 - **MCP Python SDK**: MCP client for orchestrating AI interactions
-- **Ollama/Cloudflare Workers/Google Gemini**: LLM inference backends.
+- **Google Gemini/Ollama/Cloudflare Workers**: LLM inference backends.
 - **Umami MCP Server**: Connects to your Umami analytics instance to fetch website data
 - **Automated Reporting**: Generates comprehensive analytics reports using AI
 
@@ -17,18 +17,19 @@ This project combines several powerful tools to create automated analytics repor
 
 - 🤖 **AI-Powered Analysis**: Uses large language models to analyze website analytics data
 - 📊 **Comprehensive Reports**: Generates detailed insights from your Umami analytics
-- 🔄 **Flexible Backends**: Choose between local Ollama, Cloudflare Workers, or Google Gemini.
+- 🔄 **Flexible Backends**: Choose between Google Gemini (default), local Ollama, or Cloudflare Workers
 - 💬 **Interactive Mode**: Chat interface for exploring your analytics data
 - 🚀 **Easy Setup**: Simple installation and configuration process
 
 ## Prerequisites
 
 - Python 3.8+
+- Node.js and npm (for Google Gemini CLI)
 - Access to an Umami analytics instance
 - An AI provider:
+  - A Google AI Studio API key for Gemini (recommended - generous free tier), OR
   - Ollama installed locally with a Llama model, OR
-  - A Cloudflare Workers account with AI access, OR
-  - A Google AI Studio API key for Gemini.
+  - A Cloudflare Workers account with AI access
 
 ## Installation
 
@@ -50,27 +51,36 @@ This project combines several powerful tools to create automated analytics repor
    
    Edit `.env` with your configuration:
    ```env
-   # Umami Configuration
+   # Umami Configuration (Required)
    UMAMI_API_URL=https://your-umami-instance.com/api
    UMAMI_USERNAME=username
    UMAMI_PASSWORD=password
    UMAMI_TEAM_ID=your-team-id
 
-   # Cloudflare AI Configuration
+   # Gemini API Configuration (Recommended - Default)
+   GEMINI_API_KEY=your-gemini-api-key
+
+   # Cloudflare AI Configuration (Alternative)
    CLOUDFLARE_ACCOUNT_ID=your-cloudflare-account-id
    CLOUDFLARE_API_TOKEN=your-cloudflare-api-token
-
-   # Gemini API Configuration
-   GEMINI_API_KEY=your-gemini-api-key
    ```
 
 ## Configuration
 
 ### Backend Setup
 
-Clone the - Check the [Umami MCP Server documentation](https://github.com/MCP-Mirror/jakeyShakey_umami_mcp_server) for use in `--mcp-server-dir ~/src/umami_mcp_server` flag (see below).
+Clone the Umami MCP Server - Check the [Umami MCP Server documentation](https://github.com/MCP-Mirror/jakeyShakey_umami_mcp_server) for use in `--mcp-server-dir ~/src/umami_mcp_server` flag (see below).
 
-#### Option 1: Ollama (Local)
+#### Option 1: Google Gemini (Default - Recommended)
+1. Go to [Google AI Studio](https://aistudio.google.com/)
+2. Create an API key (free tier available with generous limits)
+3. Add the `GEMINI_API_KEY` to your `.env` file
+4. Install the Gemini CLI:
+   ```bash
+   npm install -g @google/gemini-cli
+   ```
+
+#### Option 2: Ollama (Local)
 ```bash
 # Install Ollama
 ## Linux
@@ -85,35 +95,29 @@ ollama serve
 ollama pull llama3.2
 ```
 
-#### Option 2: Cloudflare Workers
+#### Option 3: Cloudflare Workers
 1. Sign up for Cloudflare Workers
 2. Enable AI features in your account
 3. Get your API token and account ID
 4. Add credentials to `.env` file
 
-#### Option 3: Google Gemini
-1. Go to [Google AI Studio](https://aistudio.google.com/).
-2. Create an API key.
-3. Add the `GEMINI_API_KEY` to your `.env` file.
-4. Ensure you have Node.js and `npx` installed to use the `gemini-cli` provider. The script will fall back to the REST API if the CLI is not available.
-
 ## Usage
 
-You can specify the AI provider using the `--ai-provider` flag. Supported providers are `cloudflare`, `ollama`, and `gemini-cli`.
+You can specify the AI provider using the `--ai-provider` flag. Supported providers are `gemini-cli` (default), `ollama`, and `cloudflare`.
 
 ### Interactive Chat Mode
 
 Start an interactive session to explore your analytics data:
 
 ```bash
-# Using Cloudflare (default)
+# Using Gemini (default - recommended)
 uv run --with-requirements requirements.txt run.py --start-date 2024-01-01 --end-date 2024-01-31 --website example.com --mcp-server-dir ~/src/umami_mcp_server --chat
 
 # Using Ollama
 uv run --with-requirements requirements.txt run.py --start-date 2024-01-01 --end-date 2024-01-31 --website example.com --mcp-server-dir ~/src/umami_mcp_server --chat --ai-provider ollama
 
-# Using Gemini
-uv run --with-requirements requirements.txt run.py --start-date 2024-01-01 --end-date 2024-01-31 --website example.com --mcp-server-dir ~/src/umami_mcp_server --chat --ai-provider gemini-cli
+# Using Cloudflare
+uv run --with-requirements requirements.txt run.py --start-date 2024-01-01 --end-date 2024-01-31 --website example.com --mcp-server-dir ~/src/umami_mcp_server --chat --ai-provider cloudflare
 ```
 
 Example interactions:
@@ -127,7 +131,7 @@ Example interactions:
 Generate specific reports directly:
 
 ```bash
-# Custom date range with the default provider (Cloudflare)
+# Custom date range with the default provider (Gemini)
 uv run --with-requirements requirements.txt run.py --start-date 2024-01-01 --end-date 2024-01-31 --website example.com --mcp-server-dir ~/src/umami_mcp_server
 
 # Specifying a different provider
@@ -140,8 +144,16 @@ Set up automated report generation using cron:
 
 ```bash
 # Add to crontab for weekly reports every Monday at 9 AM
-0 9 * * 1 cd /path/to/project && uv run --with-requirements requirements.txt run.py --start-date 2024-01-01 --end-date 2024-01-31 --website example.com --mcp-server-dir ~/src/umami_mcp_server --ai-provider cloudflare
+0 9 * * 1 cd /path/to/project && uv run --with-requirements requirements.txt run.py --start-date 2024-01-01 --end-date 2024-01-31 --website example.com --mcp-server-dir ~/src/umami_mcp_server
 ```
+
+## AI Provider Comparison
+
+| Provider             | Pros                                      | Cons                         | Best For                     |
+| -------------------- | ----------------------------------------- | ---------------------------- | ---------------------------- |
+| **Gemini** (Default) | Free tier, fast, high quality, easy setup | Requires internet            | Most users, production use   |
+| **Ollama**           | Fully local, private, no API costs        | Requires local setup, slower | Privacy-focused, offline use |
+| **Cloudflare**       | Fast, reliable, edge computing            | Usage-based pricing          | High-volume production       |
 
 ## Report Types
 
@@ -156,6 +168,15 @@ Set up automated report generation using cron:
 
 ### Common Issues
 
+**Gemini CLI Issues**
+```bash
+# Verify Gemini CLI is installed
+npx @google/gemini-cli --version
+
+# Test authentication
+npx @google/gemini-cli generate -p "Hello world"
+```
+
 **Connection Errors**
 ```bash
 # Check Umami API connectivity
@@ -168,6 +189,13 @@ curl -u user:pass https://your-umami-instance.com/api/websites
 ollama list
 ollama ps
 ```
+
+### Error Messages
+
+- **"Gemini-CLI is not installed"**: Install with `npm install -g @google/gemini-cli`
+- **"Missing GEMINI_API_KEY"**: Add your API key to the `.env` file
+- **"Ollama is not installed"**: Install Ollama following the instructions above
+- **"Missing CLOUDFLARE_ACCOUNT_ID"**: Add Cloudflare credentials to `.env`
 
 ## Development
 
@@ -201,8 +229,8 @@ For issues and questions:
 
 ## Acknowledgments
 
+- [Google Gemini](https://ai.google.dev/) for the powerful and accessible AI API
 - [Umami](https://umami.is/) for the analytics platform
 - [Umami MCP Server](https://github.com/MCP-Mirror/jakeyShakey_umami_mcp_server) for the Umami MCP server
 - [Ollama](https://ollama.ai/) for local LLM inference
 - [Cloudflare](https://workers.cloudflare.com/) for cloud AI services
-- [Google Gemini](https://ai.google.dev/) for the Gemini API.
