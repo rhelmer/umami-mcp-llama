@@ -1,6 +1,6 @@
 # Analytics Report Generator
 
-An automated analytics reporting tool that leverages MiraScope with Ollama or Cloudflare Workers to generate intelligent reports from Umami analytics data using the Model Control Protocol (MCP).
+An automated analytics reporting tool that leverages MiraScope with Ollama, Cloudflare Workers, or Google Gemini to generate intelligent reports from Umami analytics data using the Model Control Protocol (MCP).
 
 Blog post: https://www.rhelmer.org/blog/ai-powered-analytics-reports-using-mcp/
 
@@ -9,15 +9,15 @@ Blog post: https://www.rhelmer.org/blog/ai-powered-analytics-reports-using-mcp/
 This project combines several powerful tools to create automated analytics reports:
 
 - **MiraScope**: MCP client for orchestrating AI interactions
-- **Ollama/Cloudflare Workers**: LLM inference backends for running Llama models
+- **Ollama/Cloudflare Workers/Google Gemini**: LLM inference backends.
 - **Umami MCP Server**: Connects to your Umami analytics instance to fetch website data
 - **Automated Reporting**: Generates comprehensive analytics reports using AI
 
 ## Features
 
-- 🤖 **AI-Powered Analysis**: Uses Llama models to analyze website analytics data
+- 🤖 **AI-Powered Analysis**: Uses large language models to analyze website analytics data
 - 📊 **Comprehensive Reports**: Generates detailed insights from your Umami analytics
-- 🔄 **Flexible Backends**: Choose between local Ollama or cloud-based Cloudflare Workers
+- 🔄 **Flexible Backends**: Choose between local Ollama, Cloudflare Workers, or Google Gemini.
 - 💬 **Interactive Mode**: Chat interface for exploring your analytics data
 - 🚀 **Easy Setup**: Simple installation and configuration process
 
@@ -25,9 +25,10 @@ This project combines several powerful tools to create automated analytics repor
 
 - Python 3.8+
 - Access to an Umami analytics instance
-- Either:
-  - Ollama installed locally with Llama model, OR
-  - Cloudflare Workers account with AI access
+- An AI provider:
+  - Ollama installed locally with a Llama model, OR
+  - A Cloudflare Workers account with AI access, OR
+  - A Google AI Studio API key for Gemini.
 
 ## Installation
 
@@ -54,6 +55,13 @@ This project combines several powerful tools to create automated analytics repor
    UMAMI_USERNAME=username
    UMAMI_PASSWORD=password
    UMAMI_TEAM_ID=your-team-id
+
+   # Cloudflare AI Configuration
+   CLOUDFLARE_ACCOUNT_ID=your-cloudflare-account-id
+   CLOUDFLARE_API_TOKEN=your-cloudflare-api-token
+
+   # Gemini API Configuration
+   GEMINI_API_KEY=your-gemini-api-key
    ```
 
 ## Configuration
@@ -83,14 +91,29 @@ ollama pull llama3.2
 3. Get your API token and account ID
 4. Add credentials to `.env` file
 
+#### Option 3: Google Gemini
+1. Go to [Google AI Studio](https://aistudio.google.com/).
+2. Create an API key.
+3. Add the `GEMINI_API_KEY` to your `.env` file.
+4. Ensure you have Node.js and `npx` installed to use the `gemini-cli` provider. The script will fall back to the REST API if the CLI is not available.
+
 ## Usage
+
+You can specify the AI provider using the `--ai-provider` flag. Supported providers are `cloudflare`, `ollama`, and `gemini-cli`.
 
 ### Interactive Chat Mode
 
 Start an interactive session to explore your analytics data:
 
 ```bash
+# Using Cloudflare (default)
 uv run --with-requirements requirements.txt run.py --start-date 2024-01-01 --end-date 2024-01-31 --website example.com --mcp-server-dir ~/src/umami_mcp_server --chat
+
+# Using Ollama
+uv run --with-requirements requirements.txt run.py --start-date 2024-01-01 --end-date 2024-01-31 --website example.com --mcp-server-dir ~/src/umami_mcp_server --chat --ai-provider ollama
+
+# Using Gemini
+uv run --with-requirements requirements.txt run.py --start-date 2024-01-01 --end-date 2024-01-31 --website example.com --mcp-server-dir ~/src/umami_mcp_server --chat --ai-provider gemini-cli
 ```
 
 Example interactions:
@@ -104,8 +127,11 @@ Example interactions:
 Generate specific reports directly:
 
 ```bash
-# Custom date range
+# Custom date range with the default provider (Cloudflare)
 uv run --with-requirements requirements.txt run.py --start-date 2024-01-01 --end-date 2024-01-31 --website example.com --mcp-server-dir ~/src/umami_mcp_server
+
+# Specifying a different provider
+uv run --with-requirements requirements.txt run.py --start-date 2024-01-01 --end-date 2024-01-31 --website example.com --mcp-server-dir ~/src/umami_mcp_server --ai-provider ollama
 ```
 
 ### Automated Scheduling
@@ -114,8 +140,7 @@ Set up automated report generation using cron:
 
 ```bash
 # Add to crontab for weekly reports every Monday at 9 AM
-0 9 * * 1 cd /path/to/project && uv run --with-requirements requirements.txt run.py --start-date 2024-01-01 --end-date 2024-01-31 --website example.com --mcp-server-dir ~/src/umami_mcp_server
-
+0 9 * * 1 cd /path/to/project && uv run --with-requirements requirements.txt run.py --start-date 2024-01-01 --end-date 2024-01-31 --website example.com --mcp-server-dir ~/src/umami_mcp_server --ai-provider cloudflare
 ```
 
 ## Report Types
@@ -179,3 +204,4 @@ For issues and questions:
 - [Umami MCP Server](https://github.com/MCP-Mirror/jakeyShakey_umami_mcp_server) for the Umami MCP server
 - [Ollama](https://ollama.ai/) for local LLM inference
 - [Cloudflare](https://workers.cloudflare.com/) for cloud AI services
+- [Google Gemini](https://ai.google.dev/) for the Gemini API.
