@@ -111,13 +111,13 @@ Start an interactive session to explore your analytics data:
 
 ```bash
 # Using Gemini (default - recommended)
-uv run --with-requirements requirements.txt run.py --start-date 2024-01-01 --end-date 2024-01-31 --website example.com --mcp-server-dir ~/src/umami_mcp_server --chat
+uv run --with-requirements requirements.txt run.py --start-date 2025-06-01 --end-date 2025-06-31 --website example.com --mcp-server-dir ~/src/umami_mcp_server --chat
 
 # Using Ollama
-uv run --with-requirements requirements.txt run.py --start-date 2024-01-01 --end-date 2024-01-31 --website example.com --mcp-server-dir ~/src/umami_mcp_server --chat --ai-provider ollama
+uv run --with-requirements requirements.txt run.py --start-date 2025-06-01 --end-date 2025-06-31 --website example.com --mcp-server-dir ~/src/umami_mcp_server --chat --ai-provider ollama
 
 # Using Cloudflare
-uv run --with-requirements requirements.txt run.py --start-date 2024-01-01 --end-date 2024-01-31 --website example.com --mcp-server-dir ~/src/umami_mcp_server --chat --ai-provider cloudflare
+uv run --with-requirements requirements.txt run.py --start-date 2025-06-01 --end-date 2025-06-31 --website example.com --mcp-server-dir ~/src/umami_mcp_server --chat --ai-provider cloudflare
 ```
 
 Example interactions:
@@ -132,10 +132,10 @@ Generate specific reports directly:
 
 ```bash
 # Custom date range with the default provider (Gemini)
-uv run --with-requirements requirements.txt run.py --start-date 2024-01-01 --end-date 2024-01-31 --website example.com --mcp-server-dir ~/src/umami_mcp_server
+uv run --with-requirements requirements.txt run.py --start-date 2025-06-01 --end-date 2025-06-31 --website example.com --mcp-server-dir ~/src/umami_mcp_server
 
 # Specifying a different provider
-uv run --with-requirements requirements.txt run.py --start-date 2024-01-01 --end-date 2024-01-31 --website example.com --mcp-server-dir ~/src/umami_mcp_server --ai-provider ollama
+uv run --with-requirements requirements.txt run.py --start-date 2025-06-01 --end-date 2025-06-31 --website example.com --mcp-server-dir ~/src/umami_mcp_server --ai-provider ollama
 ```
 
 ### Automated Scheduling
@@ -144,7 +144,7 @@ Set up automated report generation using cron:
 
 ```bash
 # Add to crontab for weekly reports every Monday at 9 AM
-0 9 * * 1 cd /path/to/project && uv run --with-requirements requirements.txt run.py --start-date 2024-01-01 --end-date 2024-01-31 --website example.com --mcp-server-dir ~/src/umami_mcp_server
+0 9 * * 1 cd /path/to/project && uv run --with-requirements requirements.txt run.py --start-date 2025-06-01 --end-date 2025-06-31 --website example.com --mcp-server-dir ~/src/umami_mcp_server
 ```
 
 ## AI Provider Comparison
