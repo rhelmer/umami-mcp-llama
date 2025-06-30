@@ -138,40 +138,43 @@ class AnalyticsDashboard:
                 "Gemini-CLI (npx @google/gemini-cli) is not installed or not in PATH"
             )
 
-    async def call_gemini_api(self, prompt: str) -> str:
-        """Call Gemini via REST API as fallback"""
-        if not self.GEMINI_API_KEY:
-            raise ValueError("Missing GEMINI_API_KEY environment variable")
 
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={self.GEMINI_API_KEY}"
+    async def call_gemini_cli(self, prompt: str) -> str:
+        """Call Gemini via CLI"""
+        try:
+            # The gemini-cli takes the prompt via -p flag or stdin
+            # Using -p flag is more reliable than stdin
+            proc = await asyncio.create_subprocess_exec(
+                "npx",
+                "@google/gemini-cli",
+                "-p",
+                prompt,  # Pass prompt directly as parameter
+                "--model",
+                "gemini-2.5-pro",  # Use the default model
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
 
-        headers = {
-            "Content-Type": "application/json",
-        }
+            stdout, stderr = await proc.communicate()
 
-        payload = {
-            "contents": [{"parts": [{"text": prompt}]}],
-            "generationConfig": {
-                "temperature": 0.1,
-                "maxOutputTokens": 2048,
-            },
-        }
+            if proc.returncode != 0:
+                raise RuntimeError(f"Gemini-CLI error: {stderr.decode()}")
 
-        async with aiohttp.ClientSession() as session:
-            async with session.post(url, headers=headers, json=payload) as response:
-                if response.status != 200:
-                    error_text = await response.text()
-                    raise RuntimeError(
-                        f"Gemini API error ({response.status}): {error_text}"
-                    )
+            response = stdout.decode().strip()
 
-                result = await response.json()
+            # The CLI might include extra formatting, so clean it up
+            # Remove any ANSI color codes or extra whitespace
+            import re
 
-                if "candidates" not in result or not result["candidates"]:
-                    raise RuntimeError(f"No response from Gemini API: {result}")
+            response = re.sub(r"\x1b\[[0-9;]*m", "", response)  # Remove ANSI codes
+            response = response.strip()
 
-                content = result["candidates"][0]["content"]["parts"][0]["text"]
-                return content.strip()
+            return response
+
+        except FileNotFoundError:
+            raise RuntimeError(
+                "Gemini-CLI (npx @google/gemini-cli) is not installed or not in PATH"
+            )
 
     async def call_ai_provider(self, prompt: str) -> Tuple[str, str]:
         """Call the specified AI provider"""
