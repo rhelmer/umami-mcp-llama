@@ -1,6 +1,6 @@
 # Analytics Report Generator
 
-An automated analytics reporting tool that leverages MiraScope with Ollama, Cloudflare Workers, or Google Gemini to generate intelligent reports from Umami analytics data using the Model Control Protocol (MCP).
+An automated analytics reporting tool that leverages the MCP Python SDK with Ollama, Cloudflare Workers, or Google Gemini to generate intelligent reports from Umami analytics data using the Model Control Protocol (MCP).
 
 Blog post: https://www.rhelmer.org/blog/ai-powered-analytics-reports-using-mcp/
 
@@ -8,7 +8,7 @@ Blog post: https://www.rhelmer.org/blog/ai-powered-analytics-reports-using-mcp/
 
 This project combines several powerful tools to create automated analytics reports:
 
-- **MiraScope**: MCP client for orchestrating AI interactions
+- **MCP Python SDK**: MCP client for orchestrating AI interactions
 - **Ollama/Cloudflare Workers/Google Gemini**: LLM inference backends.
 - **Umami MCP Server**: Connects to your Umami analytics instance to fetch website data
 - **Automated Reporting**: Generates comprehensive analytics reports using AI
@@ -187,16 +187,17 @@ ollama ps
 
 ## Dependencies
 
-- `miracope`: MCP client framework
-- `umami-mcp-server`: Umami analytics MCP integration
+- `mcp`: MCP Python SDK
+- `umami-mcp-server`: Umami analytics MCP server
 - `python-dotenv`: Environment variable management
+- `aiohttp`: Asynchronous HTTP Client/Server for asyncio and Python
 
 ## Support
 
 For issues and questions:
 - Create an issue in this repository
 - Check the [Umami MCP Server documentation](https://github.com/MCP-Mirror/jakeyShakey_umami_mcp_server)
-- Review [MiraScope documentation](https://mirascope.com/docs/mirascope)
+- Review [MCP Python SDK Documentation](https://pypi.org/project/mcp/)
 
 ## Acknowledgments
 
